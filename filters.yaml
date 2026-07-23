@@ -1,0 +1,134 @@
+# Matching criteria applied to every posting fetched by the connectors.
+# A posting must pass ALL of: title_include_any, NOT title_exclude_any,
+# role_keywords_any, and (if it has a location) location_include_any.
+
+# Title must contain at least one of these (this is what makes it an internship).
+title_include_any:
+  - intern
+  - internship
+  - co-op
+  - working student
+
+# Title must also contain at least one of these (your target role areas, plus
+# the finance/business/sales-intersection roles you mentioned).
+role_keywords_any:
+  - software
+  - swe
+  - engineer
+  - engineering
+  - data
+  - machine learning
+  - deep learning
+  - ml
+  - ai
+  - artificial intelligence
+  - applied ai
+  - research
+  - quant
+  - quantitative
+  - solutions engineer
+  - forward deployed
+  - technical account
+  - business analyst
+  - sales engineer
+  - revenue
+  # added after the filter audit — these were excluding real postings at
+  # exactly the companies/role-types you asked for (Salesforce sales roles,
+  # Bain's "Associate Consultant" internship, Accenture's consulting/
+  # strategy/cybersecurity tracks, DRW/Tower Research finance-adjacent
+  # roles, NVIDIA's cloud/infra internship)
+  - sales
+  - consult
+  - product
+  - strategy
+  - finance
+  - financial
+  - trad # trader / trading
+  - risk
+  - venture
+  - cloud
+  - infrastructure
+  - cyber
+  - security
+  - digital
+
+# Title must NOT contain any of these (filters out senior-level postings that
+# happen to mention "internship program" ownership, etc.).
+title_exclude_any:
+  - senior
+  - staff
+  - principal
+  - director
+  - vp
+  - head of
+  - lead engineer
+
+# If the posting has a location, it must match at least one of these
+# (EU / UK / US, plus "remote" for anything not tied to a single office).
+location_include_any:
+  - remote
+  - united states
+  - "usa"
+  - u.s.
+  - uk
+  - united kingdom
+  - england
+  - london
+  - switzerland
+  - zurich
+  - geneva
+  - basel
+  - germany
+  - berlin
+  - munich
+  - frankfurt
+  - hamburg
+  - netherlands
+  - amsterdam
+  - france
+  - paris
+  - ireland
+  - dublin
+  - spain
+  - madrid
+  - barcelona
+  - italy
+  - milan
+  - sweden
+  - stockholm
+  - denmark
+  - copenhagen
+  - austria
+  - vienna
+  - belgium
+  - brussels
+  - poland
+  - warsaw
+  - portugal
+  - lisbon
+  - luxembourg
+  - finland
+  - helsinki
+  - norway
+  - oslo
+  - "eu"
+  - europe
+  # US postings are usually "City, ST" (state code) — that pattern is
+  # handled in code (filters.py US_STATE_CODE_RE) regardless of which city
+  # it is. These are the bare city names (no state code attached, or
+  # multi-city strings) that turned up in the filter audit and would
+  # otherwise slip through both checks.
+  - new york
+  - chicago
+  - san francisco
+  - seattle
+  - denver
+  - washington, d.c.
+  - washington d.c.
+  - palo alto
+  - santa clara
+  - honolulu
+
+# Some ATS platforms occasionally omit location data on a posting — decide
+# whether to include those by default rather than silently dropping them.
+location_include_if_empty: true

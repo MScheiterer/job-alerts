@@ -1,0 +1,178 @@
+# Source registry for the job-alert poller.
+#
+# Only companies with a confirmed public JSON API are listed here (v1 scope).
+# See the reconnaissance report for the full 70-company survey, including the
+# ~35 companies with no usable API (Google, Apple, Tesla, Meta, McKinsey,
+# most quant funds, etc.) that would need HTML scraping or browser automation.
+#
+# `enabled: false` entries have their platform identified but the exact
+# endpoint/token unconfirmed — flip to enabled once you've found it via
+# browser devtools (Network tab, filter XHR/Fetch, search a role).
+
+# --- Greenhouse (boards-api.greenhouse.io/v1/boards/{token}/jobs) ---
+- company: Anthropic
+  connector: greenhouse
+  token: anthropic
+
+- company: xAI
+  connector: greenhouse
+  token: xai
+
+- company: Scale AI
+  connector: greenhouse
+  token: scaleai
+
+- company: Stripe
+  connector: greenhouse
+  token: stripe
+
+- company: Adyen
+  connector: greenhouse
+  token: adyen
+
+- company: N26
+  connector: greenhouse
+  token: n26
+
+- company: Monzo
+  connector: greenhouse
+  token: monzo
+
+- company: Coinbase
+  connector: greenhouse
+  token: coinbase
+
+- company: Databricks
+  connector: greenhouse
+  token: databricks
+
+- company: Celonis
+  connector: greenhouse
+  token: celonis
+
+- company: Flow Traders
+  connector: greenhouse
+  token: flowtraders
+
+- company: DRW
+  connector: greenhouse
+  token: drweng
+
+- company: DRW (University / Early Careers)
+  connector: greenhouse
+  token: drwuniversityjobs
+
+- company: XTX Markets
+  connector: greenhouse
+  token: xtxmarketstechnologies
+
+- company: Tower Research Capital
+  connector: greenhouse
+  token: towerresearchcapital
+
+- company: IMC Trading
+  connector: greenhouse
+  token: imc
+
+- company: Jump Trading
+  connector: greenhouse
+  token: jumptrading
+
+- company: Akuna Capital
+  connector: greenhouse
+  token: akunacapital
+
+- company: Qube Research & Technologies
+  connector: greenhouse
+  token: quberesearchandtechnologies
+
+- company: Hudson River Trading
+  connector: greenhouse
+  token: TODO # only the talent-community board (hrttalentcommunity) was confirmed;
+              # the main job-board token needs a devtools check — HRT's careers
+              # page renders postings client-side so it wasn't visible in static HTML.
+  enabled: false
+
+# --- Lever (api.lever.co/v0/postings/{token}) ---
+- company: Mistral AI
+  connector: lever
+  token: mistral
+
+- company: Palantir
+  connector: lever
+  token: palantir
+
+- company: Spotify
+  connector: lever
+  token: spotify
+
+# --- Ashby (api.ashbyhq.com/posting-api/job-board/{token}) ---
+- company: DeepL
+  connector: ashby
+  token: DeepL
+
+- company: Perplexity
+  connector: ashby
+  token: perplexity
+
+- company: Plaid
+  connector: ashby
+  token: plaid
+
+# --- Workday ({tenant}.{wd}.myworkdayjobs.com/wday/cxs/{tenant}/{site}/jobs) ---
+- company: NVIDIA
+  connector: workday
+  tenant: nvidia
+  wd: wd5
+  site: NVIDIAExternalCareerSite
+
+- company: G-Research
+  connector: workday
+  tenant: gresearch
+  wd: wd103
+  site: G-Research
+
+- company: Salesforce
+  connector: workday
+  tenant: salesforce
+  wd: wd12
+  site: External_Career_Site
+
+- company: Accenture
+  connector: workday
+  tenant: accenture
+  wd: wd103
+  site: AccentureCareers
+
+- company: ASML
+  connector: workday
+  tenant: asml
+  wd: TODO # career site is a Next.js shell over a Workday backend; exact wd-number
+           # and site name weren't recoverable from static HTML (likely bot-protected
+           # or client-side rendered) — grab both from devtools on the real apply flow.
+  site: TODO
+  enabled: false
+
+# --- SmartRecruiters (api.smartrecruiters.com/v1/companies/{token}/postings) ---
+- company: Wise
+  connector: smartrecruiters
+  token: wise
+
+- company: ServiceNow
+  connector: smartrecruiters
+  token: ServiceNow
+
+# --- Workable (apply.workable.com/api/v1/widget/accounts/{token}) ---
+- company: Hugging Face
+  connector: workable
+  token: huggingface
+
+- company: Starling Bank
+  connector: workable
+  token: starling-bank
+
+# --- Bain & Company: one-off custom connector, not a reusable platform.
+# Confirmed working (www.bain.com/en/api/jobsearch/keyword/get) but requires
+# a Referer header pointing at bain.com or it 403s — see connectors/bain.py.
+- company: Bain & Company
+  connector: bain
