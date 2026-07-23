@@ -40,3 +40,4 @@ jobs:
           git add seen_jobs.db
           git diff --cached --quiet || git commit -m "Update seen_jobs.db [skip ci]"
           git push
+
