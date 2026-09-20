@@ -1,7 +1,7 @@
 import requests
 
 # Bain has no third-party ATS — this is a one-off connector for their own
-# first-party API. It 403s without a Referer pointing back at bain.com.
+# first-party careers-site API.
 URL = "https://www.bain.com/en/api/jobsearch/keyword/get"
 HEADERS = {
     "User-Agent": "job-alerts-bot/1.0 (personal internship tracker)",

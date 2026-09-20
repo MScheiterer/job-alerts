@@ -1,9 +1,8 @@
 # Source registry for the job-alert poller.
 #
-# Only companies with a confirmed public JSON API are listed here (v1 scope).
-# See the reconnaissance report for the full 70-company survey, including the
-# ~35 companies with no usable API (Google, Apple, Tesla, Meta, McKinsey,
-# most quant funds, etc.) that would need HTML scraping or browser automation.
+# Only companies with a confirmed public JSON API are listed here — no HTML
+# scraping or browser automation. Companies without a discoverable API are
+# simply out of scope.
 #
 # `enabled: false` entries have their platform identified but the exact
 # endpoint/token unconfirmed — flip to enabled once you've found it via

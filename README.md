@@ -1,8 +1,41 @@
 # job-alerts
 
-Polls internship postings straight from company career-page APIs (Greenhouse,
-Lever, Ashby, Workday, SmartRecruiters, Workable, plus a one-off Bain
-connector) and emails you when something new matches your criteria.
+Polls company career-page APIs on a schedule and emails a digest of new
+internship postings that match a set of role/location filters. Built to
+stay ahead of summer 2027 application deadlines for ML/research and
+quant/SWE internships without manually re-checking career pages.
+
+## Architecture
+
+- **Connectors** (`src/connectors/`) — one module per ATS platform
+  (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable, plus a
+  one-off Bain connector), each hitting that platform's public JSON API.
+  No HTML scraping or browser automation.
+- **Filter** (`src/filters.py`) — title/role/location keyword matching
+  against `src/filters.yaml`, applied to everything the connectors fetch.
+- **Dedup store** (`src/store.py`) — a SQLite table of previously-seen
+  job IDs, so only genuinely new postings trigger a notification.
+- **Enrichment** (`src/extract.py`, connector `enrich()` functions) —
+  fills in compensation/start date/duration/workload, preferring structured
+  API fields where a platform exposes them and falling back to regex
+  extraction from the posting description. Only run on postings that
+  survive filtering and dedup, to minimize extra requests.
+- **Notifier** (`src/notifier.py`) — formats and emails matched postings
+  via SMTP.
+- **Scheduler** (`.github/workflows/job-alerts.yml`) — GitHub Actions runs
+  the poller every 3 hours (cron) or on manual dispatch, then commits the
+  updated dedup database back to the repo so state persists between runs
+  without a separate hosted database.
+
+```
+companies.yaml ──► connectors/* ──► filters.py ──► store.py (dedup)
+                                                        │
+                                                        ▼
+                                              extract.py + enrich()
+                                                        │
+                                                        ▼
+                                                  notifier.py ──► email
+```
 
 ## Setup
 
@@ -14,35 +47,63 @@ connector) and emails you when something new matches your criteria.
 3. First run — bootstraps the seen-jobs database so you don't get emailed
    every currently-open posting at once:
    ```
-   python main.py --seed
+   python src/main.py --seed
    ```
 4. Normal runs — only genuinely new postings trigger an email:
    ```
-   python main.py
+   python src/main.py
    ```
 
-## Scheduling
+### Running on a schedule
 
-- **Local (now)**: Windows Task Scheduler → run `python main.py` every few
-  hours.
-- **GitHub Actions (later)**: once this is in a repo, commit `seen_jobs.db`
-  back after each run so dedup state persists between runs. Not set up yet.
+The included GitHub Actions workflow (`.github/workflows/job-alerts.yml`)
+runs the poller on a cron schedule and needs these repository secrets set
+(Settings → Secrets and variables → Actions):
 
-## Tuning
+| Secret        | Purpose                          |
+|---------------|-----------------------------------|
+| `SMTP_HOST`   | e.g. `smtp.gmail.com`             |
+| `SMTP_PORT`   | e.g. `587`                        |
+| `SMTP_USER`   | sending account                  |
+| `SMTP_PASS`   | app password, not account password |
+| `ALERT_TO`    | address to receive alerts        |
 
-- `companies.yaml` — add or remove companies. Two entries (`ASML`, `Hudson
-  River Trading`) ship with `enabled: false` because their platform is known
-  but the exact endpoint/token couldn't be confirmed — flip to `true` once
-  you've found it via browser devtools (Network tab → filter XHR/Fetch →
-  search a role → look for the JSON response).
-- `filters.yaml` — internship keywords, target-role keywords, exclude terms,
-  and the EU/UK/US location allow-list.
+The workflow needs `permissions: contents: write` (already set) so it can
+commit the updated dedup database back to the repo after each run. Adjust
+the `cron` expression to change polling frequency.
 
-## Coverage
+### Tuning
 
-33 companies wired up here, all with confirmed public JSON APIs — no HTML
-scraping or browser automation. That's the companies from the reconnaissance
-report tagged "200 OK" minus the two above. The remaining ~35 companies from
-that survey (Google, Apple, Tesla, Meta, McKinsey, most quant funds like
-Optiver/Jane Street/Citadel, etc.) have no discoverable API and are out of
-scope for this version.
+- `src/companies.yaml` — add or remove companies. Entries with
+  `enabled: false` have their platform identified but the exact
+  endpoint/token unconfirmed — flip to `true` once you've found it via
+  browser devtools (Network tab → filter XHR/Fetch → search a role → look
+  for the JSON response).
+- `src/filters.yaml` — internship keywords, target-role keywords, exclude
+  terms, and the location allow-list.
+
+## Sample output
+
+Each email digest groups matched postings by company:
+
+```
+Anthropic
+  - Research Engineer Intern (Zurich, Switzerland)
+    Posted:       2026-08-14
+    Compensation: not listed
+    Start date:   Summer 2027
+    Duration:     12 weeks
+    Load:         Full-time
+    https://job-boards.greenhouse.io/anthropic/jobs/xxxxxxx
+```
+
+## Limitations / next steps
+
+- Coverage is limited to companies with a confirmed public JSON API; sites
+  requiring HTML scraping or browser automation are out of scope by design.
+- Compensation/start-date/duration extraction is regex-based text matching
+  over free-form descriptions and will miss unusual phrasing when a
+  platform doesn't expose the field as structured data.
+- Dedup state lives in a SQLite file committed back to the repo by CI —
+  simple and needs no external database, but it does mean the commit
+  history accumulates an automated commit per run.
